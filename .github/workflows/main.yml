@@ -28,7 +28,9 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.4.0
 
-      # Runs a single command using the runners shell
+      - name: yarn install
+        run: yarn install
+
       - name: build
         run: yarn build
 
