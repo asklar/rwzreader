@@ -33,7 +33,7 @@ jobs:
         run: yarn build
 
       - name: publish
-        run: yarn publish --prepatch
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           
