@@ -530,7 +530,104 @@ class StringsListRuleElementData extends RuleElementData {
 }
 
 class FlaggedForActionRuleElementData extends RuleElementData {
+}
 
+class ImportanceRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public importance: number;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.importance = sb.readUInt32();
+  }
+}
+
+class SensitivityRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public sensitivity: number;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.sensitivity = sb.readUInt32();
+  }
+}
+
+class CategoriesListRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public categories: string;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.categories = sb.readStringObject();
+  }
+}
+
+class PathRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public path: string;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.path = sb.readStringObject();
+  }
+}
+
+class OnThisComputerOnlyRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public uuid: string;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.uuid = sb.readAsciiString(16);
+  }
+}
+
+class SizeInSpecificRangeRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public min: number;
+  public max: number;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.min = sb.readUInt32();
+    this.max = sb.readUInt32();
+  }
+}
+
+class DisplayMessageRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public message: string;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.message = sb.readStringObject();
+  }
+}
+
+class DeferDeliveryRuleElementData extends RuleElementData {
+  public extended: number;
+  public reserved: number;
+  public minutes: number;
+  public constructor(sb: StreamBuffer) {
+    super(sb);
+    this.extended = sb.readUInt32();
+    this.reserved = sb.readUInt32();
+    this.minutes = sb.readUInt32();
+  }
 }
 
 class FlatEntry {
@@ -639,99 +736,90 @@ class RuleElement {
     re.id = sb.readUInt32();
     switch (re.id) {
       // Mandatory rule elements
-      case 0x64: {
-        re.description = 'Unknown';
-        re.data = new UnknownRuleElement0x64Data(sb);
-        break;
-      }
-      case 0x190: {
-        re.description = 'type of message to which this rule applies';
-        re.data = new ApplyRuleElementData(sb);
-        break;
-      }
+      case 0x64: re.description = 'Unknown'; re.data = new UnknownRuleElement0x64Data(sb); break;
+      case 0x190: re.description = 'type of message to which this rule applies'; re.data = new ApplyRuleElementData(sb); break;
+
       // Conditions
-      case 0xc8: {
-        re.description = 'where my name is in the To box';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      }
-      case 0xc9: {
-        re.description = 'sent only to me';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      } 
-      case 0xca: {
-        re.description = 'where my name is not in the To box';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      }
-      case 0xcb: {
-        re.description = 'from <people or public group>';
-        re.data = new PeopleOrPublicGroupListRuleElementData(sb);
-        break;
-      }
-      case 0xcc: {
-        re.description = 'sent to <people or public group>';
-        re.data = new PeopleOrPublicGroupListRuleElementData(sb);
-        break;
-      }
-      case 0xcd: {
-        re.description = 'with specific words in the subject';
-        re.data = new StringsListRuleElementData(sb);
-        break;
-      }
-      case 0xce: {
-        re.description = 'with specific words in the body';
-        re.data = new StringsListRuleElementData(sb);
-        break;
-      }
-      case 0xcf: {
-        re.description = 'with specific words in the subject or body';
-        re.data = new StringsListRuleElementData(sb);
-        break;
-      }
-      case 0xd0: {
-        re.description = 'flagged for <action>';
-        re.data = new FlaggedForActionRuleElementData(sb);
-        break;
-      }
+      case 0xc8: re.description = 'where my name is in the To box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xc9: re.description = 'sent only to me'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xca: re.description = 'where my name is not in the To box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xcb: re.description = 'from <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0xcc: re.description = 'sent to <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0xcd: re.description = 'with specific words in the subject'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xce: re.description = 'with specific words in the body'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xcf: re.description = 'with specific words in the subject or body'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xd0: re.description = 'flagged for <action>'; re.data = new FlaggedForActionRuleElementData(sb); break;
+      case 0xd2: re.description = 'marked as <importance>'; re.data = new ImportanceRuleElementData(sb); break;
+      case 0xd3: re.description = 'marked as <sensitivity>'; re.data = new SensitivityRuleElementData(sb); break;
+      case 0xd7: re.description = 'assigned to <category> category'; re.data = new CategoriesListRuleElementData(sb); break;
+      case 0xdc: re.description = 'which is an automatic reply'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xde: re.description = 'which has an attachment'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xe0: re.description = 'with a size in a specific range'; re.data = new SizeInSpecificRangeRuleElementData(sb); break;
+      case 0xe2: re.description = 'where my name is in the CC box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xe3: re.description = 'where my name is in the To or CC box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xe5: re.description = 'with specific words in the recipient\'s address'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xe6: re.description = 'with specific words in the sender\'s address'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xe8: re.description = 'with specific words in the message header'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xee: re.description = 'through the specified account'; re.data = new PathRuleElementData(sb); break;
+      case 0xef: re.description = 'on this computer only'; re.data = new OnThisComputerOnlyRuleElementData(sb); break;
+      case 0xf1: re.description = 'which is a meeting invitation or update'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xf5: re.description = 'from RSS feeds with specified text in the title'; re.data = new StringsListRuleElementData(sb); break;
+      case 0xf6: re.description = 'assigned to any category'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xf7: re.description = 'from any RSS feed'; re.data = new SimpleRuleElementData(sb); break;
 
-      case 0xe2: {
-        re.description = 'where my name is in the CC box';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      }
+      // Actions
+      case 0x12c: re.description = 'move it to the specified folder'; re.data = new MoveToFolderRuleElementData(sb); break;
+      case 0x12d: re.description = 'delete it'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x12e: re.description = 'forward it to <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x12f: re.description = 'reply using <template>'; re.data = new PathRuleElementData(sb); break;
+      case 0x130: re.description = 'display a specific message in the New Item Alert window'; re.data = new DisplayMessageRuleElementData(sb); break;
+      case 0x132: re.description = 'clear the Message flag'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x133: re.description = 'assign it to the <category> category'; re.data = new CategoriesListRuleElementData(sb); break;
+      case 0x136: re.description = 'play <sound>'; re.data = new PathRuleElementData(sb); break;
+      case 0x137: re.description = 'mark it as <importance>'; re.data = new ImportanceRuleElementData(sb); break;
+      case 0x138: re.description = 'mark it as <sensitivity>'; re.data = new SensitivityRuleElementData(sb); break;
+      case 0x139: re.description = 'move a copy to the specified folder'; re.data = new MoveToFolderRuleElementData(sb); break;
+      case 0x13a: re.description = 'notify me when it is read'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x13b: re.description = 'notify me when it is delivered'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x13c: re.description = 'Cc the message to <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x13e: re.description = 'defer delivery by <a number of> minutes'; re.data = new DeferDeliveryRuleElementData(sb); break;
+      case 0x142: re.description = 'stop processing more rules'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x144: re.description = 'redirect it to <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x147: re.description = 'forward it to <people or public group> as attachment'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x148: re.description = 'print it'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x149: re.description = 'start <application>'; re.data = new PathRuleElementData(sb); break;
+      case 0x14a: re.description = 'permanently delete it'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x14c: re.description = 'mark as read'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x14f: re.description = 'display a Desktop alert'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x152: re.description = 'clear message categories'; re.data = new SimpleRuleElementData(sb); break;
 
-      case 0xe8: {
-        re.description = 'with specific words in the message header';
-        re.data = new StringsListRuleElementData(sb);
-        break;
-      }
-
-      case 0xf6: {
-        re.description = 'assigned to any category';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      }
-
-      case 0x12c: {
-        re.description = 'move it to the specified folder';
-        re.data = new MoveToFolderRuleElementData(sb);
-        break;
-      }
-      case 0x142: {
-        re.description = 'stop processing more rules';
-        re.data = new SimpleRuleElementData(sb);
-        break;
-      }
-      case 0x152: {
-          re.description = 'clear message categories';
-          re.data = new SimpleRuleElementData(sb);
-          break;
-      }
+      // Exceptions
+      case 0x1f4: re.description = 'except where my name is in the To box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x1f5: re.description = 'except if sent only to me'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x1f6: re.description = 'except where my name is not in the To box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x1f7: re.description = 'except if from <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x1f8: re.description = 'except if sent to <people or public group>'; re.data = new PeopleOrPublicGroupListRuleElementData(sb); break;
+      case 0x1f9: re.description = 'except if the subject contains <specific words>'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x1fa: re.description = 'except if the body contains <specific words>'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x1fb: re.description = 'except if the subject or body contains <specific words>'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x1fe: re.description = 'except if it is marked as <importance>'; re.data = new ImportanceRuleElementData(sb); break;
+      case 0x1ff: re.description = 'except if it is marked as <sensitivity>'; re.data = new SensitivityRuleElementData(sb); break;
+      case 0x203: re.description = 'except if assigned to <category> category'; re.data = new CategoriesListRuleElementData(sb); break;
+      case 0x208: re.description = 'except if it is an automatic reply'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x20a: re.description = 'except if it has an attachment'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x20c: re.description = 'except with a size in a specific range'; re.data = new SizeInSpecificRangeRuleElementData(sb); break;
+      case 0x20e: re.description = 'except where my name is in the CC box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x20f: re.description = 'except if my name is in the To or CC box'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x211: re.description = 'except with specific words in the recipient\'s address'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x212: re.description = 'except with specific words in the sender\'s address'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x213: re.description = 'except if the message header contains <specific words>'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x216: re.description = 'except if it is a meeting invitation or update'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x219: re.description = 'except from RSS feeds with specified text in the title'; re.data = new StringsListRuleElementData(sb); break;
+      case 0x21a: re.description = 'except if assigned to any category'; re.data = new SimpleRuleElementData(sb); break;
+      case 0x21b: re.description = 'except from any RSS feed'; re.data = new SimpleRuleElementData(sb); break;
 
       default: {
-        throw new OutlookRulesReadError(`unknown element data type: ${re.id}`);
+        throw new OutlookRulesReadError(`unknown element data type: 0x${re.id.toString(16)} (${re.id})`);
       }
     }
     return re;
@@ -786,10 +874,20 @@ class RulesFile {
 
 }
 
-const content = fs.readFileSync('C:/Temp/Untitled.rwz');
+const inputPath = process.argv[2] || 'rules.rwz';
+const outputPath = process.argv[3] || 'outlook-rules.json';
+
+if (!fs.existsSync(inputPath)) {
+  console.error(`Usage: node index.js <input.rwz> [output.json]`);
+  console.error(`File not found: ${inputPath}`);
+  process.exit(1);
+}
+
+const content = fs.readFileSync(inputPath);
 async function main() {
   const rf = await RulesFile.parse(new StreamBuffer(content));
-  fs.writeFileSync('C:/temp/outlook-rules.json', JSON.stringify(rf, null, 2));
+  fs.writeFileSync(outputPath, JSON.stringify(rf, null, 2));
+  console.log(`Converted ${inputPath} -> ${outputPath}`);
 }
 
 try {
