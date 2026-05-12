@@ -1,20 +1,34 @@
 {
   "name": "rwzreader",
   "version": "0.0.1",
-  "description": "Outlook rules file reader",
-  "main": "index.js",
-  "repository": "https://github.com/asklar/rwzreader",
+  "description": "Outlook rules (.rwz) file reader — converts binary RWZ files to JSON",
+  "main": "bin/index.js",
+  "types": "bin/index.d.ts",
+  "bin": {
+    "rwzreader": "bin/index.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asklar/rwzreader"
+  },
   "author": "Alexander Sklar <asklar@microsoft.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
-    "@types/node": "^16.7.9",
-    "tsc": "^2.0.3",
-    "typescript": "^4.4.2"
+    "@types/node": "^25.7.0",
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "start": "node bin/index.js",
     "prestart": "npm run build",
-    "build": "tsc"
+    "build": "tsc",
+    "clean": "node -e \"fs.rmSync('bin',{recursive:true,force:true})\""
   },
   "type": "module"
 }

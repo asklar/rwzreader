@@ -1,6 +1,4 @@
 import * as fs from 'fs';
-import { Readable } from 'stream';
-import { promisify } from 'util';
 
 function softAssert(condition: boolean, msg?: string) {
   if (!condition) {
@@ -84,6 +82,9 @@ class StreamBuffer {
     return v.toString('utf8', 0, i);
   }
   public readBytes(len: number): Buffer {
+    if (len < 0 || this.offset + len > this.buffer.length) {
+      throw new Error(`buffer underrun: requested ${len} bytes at offset ${this.offset}, buffer length ${this.buffer.length}`);
+    }
     const b = this.buffer.subarray(this.offset, this.offset + len);
     this.offset += len;
     return Buffer.from(b as any);
@@ -173,7 +174,7 @@ class RulesFooter {
   public static parse(sb: StreamBuffer) {
     const rf = new RulesFooter();
     rf.templateDirectoryLength = sb.readUInt32();
-    rf.templateDirectory = sb.readString(rf.templateDirectoryLength);
+    rf.templateDirectory = sb.readString(rf.templateDirectoryLength!);
     rf.creationDate = OleDateTime.parse(sb);
     rf.unknown = sb.readUInt32();
     return rf;
@@ -210,14 +211,14 @@ class RuleHeader {
         rh.padding = sb.readUInt16();
         rh.classNameLength = sb.readUInt16();
         softAssert(rh.classNameLength === 'CRuleElement'.length);
-        rh.className = sb.readAsciiString(rh.classNameLength);
+        rh.className = sb.readAsciiString(rh.classNameLength!);
         softAssert(rh.className === 'CRuleElement');
       } else if (rh.separator === 0x8001) {
         softAssert(index !== 0, `separator 0x8001 unexpected for first rule`);
       } else if (rh.separator === 0) {
         // tolerate
       } else {
-        console.warn(`Warning: unexpected separator value 0x${rh.separator.toString(16)} at rule index ${index}`);
+        console.warn(`Warning: unexpected separator value 0x${rh.separator!.toString(16)} at rule index ${index}`);
       }
     }
     return rh;
@@ -679,8 +680,12 @@ class RuleElement {
       case 0xec: re.description = 'through the specified account'; re.data = new ThroughAccountRuleElementData(sb); break;
       case 0xed: re.description = 'sender is in specified address book'; re.data = new SenderInSpecifiedAddressBookRuleElementData(sb); break;
       case 0xf2: re.description = 'uses the <form> form (alt)'; re.data = new FormTypeRuleElementData(sb); break;
+      case 0xee: re.description = 'through the specified account'; re.data = new ThroughAccountRuleElementData(sb); break;
+      case 0xef: re.description = 'on this computer only'; re.data = new OnThisComputerOnlyRuleElementData(sb); break;
+      case 0xf1: re.description = 'which is a meeting invitation or update'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xf5: re.description = 'from RSS feeds with specified text in the title'; re.data = new StringsListRuleElementData(sb); break;
       case 0xf6: re.description = 'assigned to any category'; re.data = new SimpleRuleElementData(sb); break;
-      case 0xf7: re.description = 'which is a meeting invitation or update'; re.data = new SimpleRuleElementData(sb); break;
+      case 0xf7: re.description = 'from any RSS feed'; re.data = new SimpleRuleElementData(sb); break;
       // === ACTIONS (0x12C-0x153) ===
       case 0x12c: re.description = 'move it to the specified folder'; re.data = new MoveToFolderRuleElementData(sb); break;
       case 0x12d: re.description = 'delete it'; re.data = new SimpleRuleElementData(sb); break;
@@ -744,10 +749,7 @@ class RuleElement {
       case 0x21a: re.description = 'except if assigned to any category'; re.data = new SimpleRuleElementData(sb); break;
       case 0x21b: re.description = 'except if it is a meeting invitation or update'; re.data = new SimpleRuleElementData(sb); break;
       default: {
-        re.description = `unknown element (0x${re.id.toString(16)})`;
-        console.warn(`Warning: unknown rule element id 0x${re.id.toString(16)} at offset ${sb.offset}`);
-        try { re.data = new SimpleRuleElementData(sb); } catch (e) { re.description += ' (could not parse data)'; }
-        break;
+        throw new OutlookRulesReadError(`unknown element data type: 0x${re.id!.toString(16)} (${re.id})`);
       }
     }
     return re;
@@ -783,20 +785,11 @@ class RulesFile {
     rf.header = RulesHeader.parse(buf);
     console.log(`Parsing ${rf.header.numberOfRules} rules...`);
     for (let i = 0; i < rf.header.numberOfRules; i++) {
-      try {
-        const rule = Rule.parse(buf, i, rf.header.numberOfRules);
-        rf.rules.push(rule);
-      } catch (e) {
-        console.warn(`Warning: could not parse rule ${i}: ${e}`);
-        fs.writeFileSync('outlook-rules.json', JSON.stringify(rf, null, 2));
-        console.log(`Wrote partial results (${rf.rules.length} rules) to outlook-rules.json`);
-        break;
-      }
+      const rule = Rule.parse(buf, i, rf.header.numberOfRules);
+      rf.rules.push(rule);
       if (i !== rf.header.numberOfRules - 1) {
-        try {
-          const separator = buf.readUInt16();
-          softAssert(separator === 0, `expected inter-rule separator 0, got 0x${separator.toString(16)}`);
-        } catch (e) { break; }
+        const separator = buf.readUInt16();
+        softAssert(separator === 0, `expected inter-rule separator 0, got 0x${separator.toString(16)}`);
       }
     }
     try { rf.footer = RulesFooter.parse(buf); } catch (e) { console.warn(`Warning: could not parse footer: ${e}`); }
@@ -804,13 +797,21 @@ class RulesFile {
   }
 }
 
-const content = fs.readFileSync(process.argv[2] || 'Untitled.rwz');
+const inputPath = process.argv[2] || 'rules.rwz';
+const outputPath = process.argv[3] || 'outlook-rules.json';
+
+if (!fs.existsSync(inputPath)) {
+  console.error(`Usage: node index.js <input.rwz> [output.json]`);
+  console.error(`File not found: ${inputPath}`);
+  process.exit(1);
+}
+
+const content = fs.readFileSync(inputPath);
 
 async function main() {
   const rf = await RulesFile.parse(new StreamBuffer(content));
-  const outFile = 'outlook-rules.json';
-  fs.writeFileSync(outFile, JSON.stringify(rf, null, 2));
-  console.log(`Wrote ${outFile}`);
+  fs.writeFileSync(outputPath, JSON.stringify(rf, null, 2));
+  console.log(`Converted ${inputPath} -> ${outputPath}`);
 }
 
 try {
