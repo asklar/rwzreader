@@ -56,7 +56,7 @@ export class StreamBuffer {
       for (let i = 0; i < len; i++) {
         b[i] = this.readUInt8();
       }
-      return b.toString();
+      return b.toString().replace(/\0+$/, '');
     } catch (e) {
       return '';
     }

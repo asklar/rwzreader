@@ -91,7 +91,7 @@ export class StoreEntryId extends FlatEntry {
     softAssert(this.version === 0);
     this.flag = sb.readUInt8();
     softAssert(this.flags === 0);
-    this.dllFileName = sb.readAsciiString(14).replace(/\0+$/, '');
+    this.dllFileName = sb.readAsciiString(14);
     softAssert(this.dllFileName === 'EMSMDB.DLL');
     this.wrappedFlags = sb.readUInt32();
     softAssert(this.wrappedFlags === 0);
