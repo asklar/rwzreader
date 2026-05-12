@@ -114,6 +114,6 @@ describe('OnThisComputerOnlyRuleElementData', () => {
     const payload = Buffer.concat([u32(1), u32(0), uuid]);
     const sb = new StreamBuffer(payload);
     const data = new OnThisComputerOnlyRuleElementData(sb);
-    expect(data.uuid.length).toBe(16);
+    expect(data.uuid.length).toBe(32); // 16 bytes as hex
   });
 });

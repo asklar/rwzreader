@@ -61,9 +61,9 @@ export class FolderEntryId extends FlatEntry {
     if (this.size !== 0) {
       this.flags = sb.readUInt32();
       softAssert(this.flags === 0);
-      this.providerUID = sb.readAsciiString(16);
+      this.providerUID = sb.readBytes(16).toString('hex');
       this.folderType = sb.readUInt16();
-      this.databaseGuid = sb.readAsciiString(16);
+      this.databaseGuid = sb.readBytes(16).toString('hex');
       this.globalCounter = sb.readUInt64().toString();
     }
     sb.offset = pos + this.size + 4;
@@ -86,16 +86,16 @@ export class StoreEntryId extends FlatEntry {
     super(sb);
     this.flags = sb.readUInt32();
     softAssert(this.flags === 0);
-    this.providerUID = sb.readAsciiString(16);
+    this.providerUID = sb.readBytes(16).toString('hex');
     this.version = sb.readUInt8();
     softAssert(this.version === 0);
     this.flag = sb.readUInt8();
     softAssert(this.flags === 0);
-    this.dllFileName = sb.readAsciiString(14);
-    softAssert(this.dllFileName === 'EMSMDB.DLL\0\0\0\0');
+    this.dllFileName = sb.readAsciiString(14).replace(/\0+$/, '');
+    softAssert(this.dllFileName === 'EMSMDB.DLL');
     this.wrappedFlags = sb.readUInt32();
     softAssert(this.wrappedFlags === 0);
-    this.wrappedProvider = sb.readAsciiString(16);
+    this.wrappedProvider = sb.readBytes(16).toString('hex');
     this.wrappedType = sb.readUInt32();
     softAssert(this.wrappedType === 0xc);
     this.serverShortName = sb.readAsciiUntilNullTerminator();
@@ -292,7 +292,7 @@ export class ApplyRetentionPolicyRuleElementData extends RuleElementData {
   public constructor(sb: StreamBuffer) {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
-    this.followUp = sb.readUInt32(); this.guid = sb.readAsciiString(16);
+    this.followUp = sb.readUInt32(); this.guid = sb.readBytes(16).toString('hex');
     this.name = sb.readStringObject();
   }
 }
@@ -302,7 +302,7 @@ export class OnThisComputerOnlyRuleElementData extends RuleElementData {
   public constructor(sb: StreamBuffer) {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
-    this.uuid = sb.readAsciiString(16);
+    this.uuid = sb.readBytes(16).toString('hex');
   }
 }
 
