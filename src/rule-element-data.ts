@@ -194,6 +194,9 @@ export class MoveToFolderRuleElementData extends RuleElementData {
   public toJSON() {
     return {
       folderName: this.folderName,
+      folderId: this.folderEntryId.databaseGuid && this.folderEntryId.globalCounter
+        ? `${this.folderEntryId.databaseGuid}:${this.folderEntryId.globalCounter}`
+        : undefined,
       mailbox: this.storeEntryId.serverShortName,
       secondaryUserStore: this.secondaryUserStore,
     };
