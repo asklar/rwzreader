@@ -105,6 +105,8 @@ export class PropertyValueArray {
   public propertyHeaders: PropertyValueHeader[] = [];
   public readonly properties: Record<string, any> = {};
 
+  public toJSON() { return this.properties; }
+
   public constructor(sb: StreamBuffer) {
     const unknown = sb.readUInt32();
     const nProps = sb.readUInt32();

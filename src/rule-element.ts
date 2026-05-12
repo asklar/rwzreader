@@ -24,6 +24,8 @@ export class RuleElement {
 
   private constructor() {}
 
+  public toJSON() { return { description: this.description, data: this.data }; }
+
   public static parse(sb: StreamBuffer) {
     const re = new RuleElement();
     re.id = sb.readUInt32();

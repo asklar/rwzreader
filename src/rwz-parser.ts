@@ -31,6 +31,8 @@ export class RulesHeader {
 
   private constructor() {}
 
+  public toJSON() { return { version: this.version, numberOfRules: this.numberOfRules }; }
+
   public static parse(buf: StreamBuffer) {
     const rh = new RulesHeader();
     const peekedSignature = buf.readUInt32();
@@ -107,6 +109,8 @@ export class RuleHeader {
   public className?: string;
 
   private constructor() {}
+
+  public toJSON() { return { name: this.name, enabled: this.enabled }; }
 
   public static parse(sb: StreamBuffer, index: number, totalRules: number) {
     const rh = new RuleHeader();
