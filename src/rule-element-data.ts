@@ -172,7 +172,8 @@ export class FlaggedForActionRuleElementData extends RuleElementData {
     this.reserved = sb.readUInt32();
     softAssert(this.reserved === 0);
     this.actionName = sb.readStringObject();
-  }
+  }
+
 }
 
 export class MoveToFolderRuleElementData extends RuleElementData {
@@ -231,7 +232,8 @@ export class CategoriesListRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.categories = sb.readStringObject();
-  }
+  }
+
 }
 
 export class PathRuleElementData extends RuleElementData {
@@ -240,7 +242,8 @@ export class PathRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.path = sb.readStringObject();
-  }
+  }
+
 }
 
 export class DisplayMessageInNewItemAlertWindowRuleElementData extends RuleElementData {
@@ -249,7 +252,8 @@ export class DisplayMessageInNewItemAlertWindowRuleElementData extends RuleEleme
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.message = sb.readStringObject();
-  }
+  }
+
 }
 
 export class FlagRuleElementData extends RuleElementData {
@@ -260,7 +264,8 @@ export class FlagRuleElementData extends RuleElementData {
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.days = sb.readUInt32(); this.actionName = sb.readStringObject();
     this.unknown = sb.readUInt32();
-  }
+  }
+
 }
 
 export class DeferDeliveryRuleElementData extends RuleElementData {
@@ -269,7 +274,8 @@ export class DeferDeliveryRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.minutes = sb.readUInt32();
-  }
+  }
+
 }
 
 export class PerformCustomActionRuleElementData extends RuleElementData {
@@ -280,7 +286,8 @@ export class PerformCustomActionRuleElementData extends RuleElementData {
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.location = sb.readStringObject(); this.name = sb.readStringObject();
     this.options = sb.readStringObject(); this.actionValue = sb.readStringObject();
-  }
+  }
+
 }
 
 export class AutomaticReplyRuleElementData extends RuleElementData {
@@ -292,7 +299,8 @@ export class AutomaticReplyRuleElementData extends RuleElementData {
     this.messageEntryId = new FlatEntry(sb);
     if (this.messageEntryId.size > 0) { sb.readBytes(this.messageEntryId.size); }
     this.name = sb.readStringObject();
-  }
+  }
+
 }
 
 export class RunScriptRuleElementData extends RuleElementData {
@@ -302,7 +310,8 @@ export class RunScriptRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.name = sb.readStringObject(); this.functionName = sb.readStringObject();
-  }
+  }
+
 }
 
 export class FlagForFollowUpRuleElementData extends RuleElementData {
@@ -312,7 +321,8 @@ export class FlagForFollowUpRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.followUp = sb.readUInt32(); this.actionName = sb.readStringObject();
-  }
+  }
+
 }
 
 export class ApplyRetentionPolicyRuleElementData extends RuleElementData {
@@ -323,7 +333,8 @@ export class ApplyRetentionPolicyRuleElementData extends RuleElementData {
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.followUp = sb.readUInt32(); this.guid = sb.readBytes(16).toString('hex');
     this.name = sb.readStringObject();
-  }
+  }
+
 }
 
 export class OnThisComputerOnlyRuleElementData extends RuleElementData {
@@ -332,15 +343,48 @@ export class OnThisComputerOnlyRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.uuid = sb.readBytes(16).toString('hex');
-  }
+  }
+
 }
 
 export class WithSelectedPropertiesOfDocumentOrFormsRuleElementData extends RuleElementData {
   public extended: number; public reserved: number;
+  public forms: string[];
+  public documentProperties: { field: string; tag: number; stringValue: string }[];
+  public classes: string[];
   public constructor(sb: StreamBuffer) {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
-  }
+    // Forms: semicolon-separated UTF-16 string
+    const formsStr = sb.readStringObject();
+    this.forms = formsStr.length > 0 ? formsStr.split(';') : [];
+    // Document properties
+    const numProps = sb.readUInt16();
+    this.documentProperties = [];
+    for (let i = 0; i < numProps; i++) {
+      const field = sb.readStringObject();
+      const tag = sb.readUInt32();
+      const stringMatchType = sb.readUInt32();
+      const stringValue = sb.readStringObject();
+      const numberMatchType = sb.readUInt32();
+      const numberValue1 = sb.readUInt32();
+      const numberValue2 = sb.readUInt32();
+      const boolMatchType = sb.readUInt32();
+      const unknown1 = sb.readUInt32();
+      const dateMatchType = sb.readUInt32();
+      // OleDateTime: status(4) + unknown(4) + timestamp(8)
+      sb.readUInt32(); sb.readUInt32(); sb.readDouble();
+      const unknown2 = sb.readUInt32();
+      this.documentProperties.push({ field, tag, stringValue });
+    }
+    // Classes: ASCII strings
+    const numClasses = sb.readUInt32();
+    this.classes = [];
+    for (let i = 0; i < numClasses; i++) {
+      const len = sb.readUInt8();
+      this.classes.push(sb.readAsciiString(len));
+    }
+  }
 }
 
 export class SizeInSpecificRangeRuleElementData extends RuleElementData {
@@ -349,7 +393,8 @@ export class SizeInSpecificRangeRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.minSize = sb.readUInt32(); this.maxSize = sb.readUInt32();
-  }
+  }
+
 }
 
 export class ReceivedInSpecificDateSpanRuleElementData extends RuleElementData {
@@ -358,20 +403,38 @@ export class ReceivedInSpecificDateSpanRuleElementData extends RuleElementData {
   public constructor(sb: StreamBuffer) {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
+    // Each date: status(4) + unknown(4) + timestamp(8) = 16 bytes
     const startStatus = sb.readUInt32();
-    this.startDate = { status: startStatus === 0 ? 'Valid' : 'Null', timestamp: sb.readDouble() };
+    sb.readUInt32(); // padding
+    const startTs = sb.readDouble();
+    this.startDate = { status: startStatus === 0 ? 'Valid' : 'Null', timestamp: startTs };
     const endStatus = sb.readUInt32();
-    this.endDate = { status: endStatus === 0 ? 'Valid' : 'Null', timestamp: sb.readDouble() };
-  }
+    sb.readUInt32(); // padding
+    const endTs = sb.readDouble();
+    this.endDate = { status: endStatus === 0 ? 'Valid' : 'Null', timestamp: endTs };
+  }
+
 }
 
 export class FormTypeRuleElementData extends RuleElementData {
-  public extended: number; public reserved: number; public formClass: string;
+  public extended: number; public reserved: number;
+  public forms: { displayName: string; messageClass: string }[] = [];
   public constructor(sb: StreamBuffer) {
-    super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
+    super(sb); this.extended = sb.readUInt32();
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
-    this.formClass = sb.readStringObject();
-  }
+    for (let i = 0; i < this.extended; i++) {
+      const displayName = sb.readStringObject();
+      // Message class is a length-prefixed ASCII string with null-terminated padding
+      const classLen = sb.readUInt8();
+      const messageClass = sb.readAsciiString(classLen);
+      // Consume any trailing null bytes (padding)
+      while (sb.remaining > 0) {
+        const peek = sb.readUInt8();
+        if (peek !== 0) { sb.offset--; break; }
+      }
+      this.forms.push({ displayName, messageClass });
+    }
+  }
 }
 
 export class ThroughAccountRuleElementData extends RuleElementData {
@@ -380,7 +443,8 @@ export class ThroughAccountRuleElementData extends RuleElementData {
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.accountName = sb.readStringObject();
-  }
+  }
+
 }
 
 export class SenderInSpecifiedAddressBookRuleElementData extends RuleElementData {
@@ -389,5 +453,6 @@ export class SenderInSpecifiedAddressBookRuleElementData extends RuleElementData
     super(sb); this.extended = sb.readUInt32(); softAssert(this.extended === 1);
     this.reserved = sb.readUInt32(); softAssert(this.reserved === 0);
     this.addressBookName = sb.readStringObject();
-  }
+  }
+
 }
