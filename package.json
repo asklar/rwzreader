@@ -29,7 +29,8 @@
     "start": "node bin/index.js",
     "prestart": "npm run build",
     "build": "tsc",
-    "clean": "node -e \"fs.rmSync('bin',{recursive:true,force:true})\""
+    "clean": "node -e \"fs.rmSync('bin',{recursive:true,force:true})\"",
+    "test": "vitest run"
   },
   "type": "module"
 }
