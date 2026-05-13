@@ -1,6 +1,6 @@
 {
   "name": "rwzreader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Outlook rules (.rwz) file reader — converts binary RWZ files to JSON",
   "main": "bin/index.js",
   "types": "bin/index.d.ts",
